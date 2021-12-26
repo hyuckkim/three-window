@@ -1,0 +1,13 @@
+[package]
+name = "three-window"
+version = "0.1.0"
+edition = "2021"
+authors = [
+    "hyuckkim <monkeyhyuck@gmail.com>",
+]
+
+[[bin]]
+name = "three-window"
+
+[dependencies]
+piston_window = "0.121.0"
