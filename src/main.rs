@@ -45,8 +45,8 @@ impl Win {
                 // overwrap rectangles with window
                 if let Some(t) = self.rect.overwrap(&r.unwrap_or(default_rect)) {
                     let rect = math::margin_rectangle( // x, y, w, h (not x2)
-                        [(t.x1 - self.rect.x1) as f64, (t.y1 - self.rect.y1) as f64,
-                         (t.x2 - t.x1) as f64, (t.y2 - t.y1) as f64], 
+                        [(t.a.x - self.rect.a.x) as f64, (t.a.y - self.rect.a.y) as f64,
+                         (t.b.x - t.a.x) as f64, (t.b.y - t.a.y) as f64], 
                         0.0);
                     rectangle(color[j + 1], rect, c.transform, g);
                 }
@@ -54,9 +54,12 @@ impl Win {
         });
     }
 }
+struct Point {
+    x: i32, y: i32
+}
 // rectangle with two point. 
 struct Rect {
-    x1: i32, y1: i32, x2: i32, y2: i32,
+    a: Point, b: Point,
 }
 impl Rect {
     // make rect, x1/y1 is left/up
@@ -64,35 +67,43 @@ impl Rect {
         let xpair = if x1 < x2 {(x1, x2)} else {(x2, x1)};
         let ypair = if y1 < y2 {(y1, y2)} else {(y2, y1)};
         Rect {
-            x1: xpair.0, y1: ypair.0, x2: xpair.1, y2: ypair.1
+            a: Point {x: xpair.0, y: ypair.0}, 
+            b: Point {x: xpair.1, y: ypair.1}
         }
     }
     // make small rect
-    fn pairs(&self, other: &Rect) -> ((i32, i32), (i32, i32)) {
-        ((
-            if self.x1 < other.x1 {other.x1} else {self.x1},
-            if self.x2 < other.x2 {self.x2} else {other.x2}
-            ),
-        (
-            if self.y1 < other.y1 {other.y1} else {self.y1},
-            if self.y2 < other.y2 {self.y2} else {other.y2}
-        ))
+    fn pairs(&self, other: &Rect) -> (Point, Point) {
+        (Point{
+            x: if self.a.x < other.a.x {other.a.x} else {self.a.x},
+            y: if self.a.y < other.a.y {other.a.y} else {self.a.y},
+        },
+        Point {
+            x: if self.b.x < other.b.x {self.b.x} else {other.b.x},
+            y: if self.b.y < other.b.y {self.b.y} else {other.b.y}
+        })
     }
     // is small rect can make real rect
     fn is_overwrap(&self, other: &Rect) -> bool {
-        let (xpair, ypair) = self.pairs(other);
+        let (a, b) = self.pairs(other);
         
-        xpair.0 < xpair.1 && ypair.0 < ypair.1
+        a.x < b.x && a.y < b.y
     }
     // make small rect to struct if it can
     fn overwrap(&self, other: &Rect) -> Option<Rect> {
-        let (xpair, ypair) = self.pairs(other);
+        let (a, b) = self.pairs(other);
         if self.is_overwrap(other) {
-            Some(Rect::new(xpair.0, ypair.0, xpair.1, ypair.1))
+            Some(Rect::new(a.x, a.y, b.x, b.y))
         } 
         else {
             None
         }
+    }
+}
+impl Copy for Point { }
+
+impl Clone for Point {
+    fn clone(&self) -> Point {
+        *self
     }
 }
 impl Copy for Rect { }
