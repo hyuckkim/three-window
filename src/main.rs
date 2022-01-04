@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 extern crate piston_window;
 
 use piston_window::*;
@@ -116,8 +118,8 @@ fn main() {
                 let pos = w.dow.get_position().unwrap(); // on desktop screen
                 w.rect = Rect::new(pos.x, pos.y, pos.x + WINDOW_SIZE as i32, pos.y + WINDOW_SIZE as i32);
                 w.draw(e, rectangles);
-                // X button pressed
-                if w.dow.should_close() {w.dow.hide(); }
+                
+                if w.dow.should_close() {w.dow.hide(); } // X button pressed
                 rectangles[binary(i) - 1] = Some(w.rect);
             }
             else {
